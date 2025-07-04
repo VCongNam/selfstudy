@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# AI English Learning
 
-## Getting Started
+Ứng dụng học tiếng Anh thông minh sử dụng AI để tạo bài tập từ tài liệu PDF.
 
-First, run the development server:
+## Tính năng
 
+- 📄 Upload file PDF chứa nội dung tiếng Anh
+- 🤖 Sử dụng Gemini AI để tạo bài tập thông minh
+- 📊 Độ khó tăng dần từ dễ đến khó
+- 💡 Giải thích chi tiết cho từng câu hỏi
+- 💭 Gợi ý học tập cho người học
+- 📈 Theo dõi tiến độ và kết quả học tập
+- 🎨 Giao diện thân thiện, dễ sử dụng
+
+## Cài đặt
+
+1. Clone repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd selfstudy
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Cài đặt dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+3. Tạo file `.env.local` và thêm API key Gemini:
+```bash
+# Lấy API key từ: https://makersuite.google.com/app/apikey
+GEMINI_API_KEY=your_gemini_api_key_here
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Chạy ứng dụng:
+```bash
+npm run dev
+```
 
-## Learn More
+5. Mở trình duyệt và truy cập: `http://localhost:3000`
 
-To learn more about Next.js, take a look at the following resources:
+## Cách sử dụng
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Chuẩn bị tài liệu**: Chuẩn bị file PDF chứa nội dung tiếng Anh (sách, bài báo, tài liệu học tập)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Upload file**: Click "Chọn file PDF" và chọn file của bạn
 
-## Deploy on Vercel
+3. **Đợi AI xử lý**: AI sẽ phân tích nội dung và tạo bài tập (có thể mất vài giây)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. **Làm bài tập**: 
+   - Trả lời từng câu hỏi
+   - Xem gợi ý học tập nếu cần
+   - Xem giải thích chi tiết sau khi trả lời
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. **Xem kết quả**: Kiểm tra điểm số và làm lại nếu muốn cải thiện
+
+## Cấu trúc dự án
+
+```
+selfstudy/
+├── app/
+│   ├── api/
+│   │   └── upload/
+│   │       └── route.js          # API xử lý upload PDF và tạo bài tập
+│   ├── components/
+│   │   ├── FileUpload.js         # Component upload file
+│   │   ├── QuestionCard.js       # Component hiển thị câu hỏi
+│   │   └── QuizSection.js        # Component quản lý bài tập
+│   ├── page.js                   # Trang chính
+│   └── layout.js                 # Layout chung
+├── public/                       # Tài nguyên tĩnh
+├── .env.local                    # Cấu hình môi trường
+└── package.json                  # Dependencies
+```
+
+## Công nghệ sử dụng
+
+- **Frontend**: Next.js 15, React 19, Tailwind CSS
+- **AI**: Google Gemini AI
+- **PDF Processing**: pdf-parse
+- **Icons**: Lucide React
+- **Styling**: Tailwind CSS
+
+## Lưu ý
+
+- Cần có API key Gemini để sử dụng tính năng AI
+- File PDF cần có nội dung tiếng Anh rõ ràng để AI có thể tạo bài tập tốt
+- Kích thước file PDF không nên quá lớn để tránh timeout
+
+## Đóng góp
+
+Mọi đóng góp đều được chào đón! Hãy tạo issue hoặc pull request để cải thiện ứng dụng.
+
+## License
+
+MIT License
