@@ -141,7 +141,7 @@ export default function Home() {
         ) : (
           <div className="flex flex-row gap-6 w-full">
             <div className="flex-1 min-w-0">
-              <QuizSection questions={questions} originalText={originalText} />
+          <QuizSection questions={questions} originalText={originalText} />
             </div>
             <div className="flex-[2] min-w-0 flex flex-col gap-4">
               {pdfUrl && pdfFile && (

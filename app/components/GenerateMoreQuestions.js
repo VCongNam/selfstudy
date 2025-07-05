@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, Loader2 } from 'lucide-react';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+import { buildApiUrl } from "../utils/api";
 
 export default function GenerateMoreQuestions({ originalText, onQuestionsGenerated, existingQuestions = [], existingQuestionsFull = [] }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +29,7 @@ export default function GenerateMoreQuestions({ originalText, onQuestionsGenerat
       formData.append('type', questionType);
       formData.append('difficulty', difficulty);
 
-      const response = await fetch(`${API_URL}/generate-questions`, {
+      const response = await fetch(buildApiUrl('/generate-questions'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

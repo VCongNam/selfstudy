@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Upload, FileText, Loader2 } from "lucide-react";
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+import { buildApiUrl } from "../utils/api";
 
 export default function FileUpload({ onQuestionsGenerated }) {
   const [isUploading, setIsUploading] = useState(false);
@@ -13,6 +12,11 @@ export default function FileUpload({ onQuestionsGenerated }) {
   const [questionType, setQuestionType] = useState('mixed');
   const [selectedFile, setSelectedFile] = useState(null);
   const [difficulty, setDifficulty] = useState('any');
+
+  // Debug: Log API URL in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('FileUpload - API URL:', buildApiUrl('/upload'));
+  }
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -45,7 +49,7 @@ export default function FileUpload({ onQuestionsGenerated }) {
     formData.append("difficulty", difficulty);
 
     try {
-      const response = await fetch(`${API_URL}/upload`, {
+      const response = await fetch(buildApiUrl('/upload'), {
         method: "POST",
         body: formData,
       });
