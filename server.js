@@ -28,7 +28,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     if (difficulty !== 'any') {
       difficultyText = `Tất cả câu hỏi phải có độ khó ${difficulty === 'easy' ? 'dễ' : difficulty === 'medium' ? 'trung bình' : 'khó'} (difficulty: ${difficulty}). Không tạo câu hỏi ở độ khó khác.`;
     }
-
+ 
     let prompt;
     if (type === 'multiple_choice') {
       prompt = `
