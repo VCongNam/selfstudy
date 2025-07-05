@@ -10,6 +10,8 @@ export default function Home() {
   const [questions, setQuestions] = useState(null);
   const [originalText, setOriginalText] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfFile, setPdfFile] = useState(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -17,9 +19,14 @@ export default function Home() {
     }
   }, []);
 
-  const handleQuestionsGenerated = (newQuestions, text) => {
+  const handleQuestionsGenerated = (newQuestions, text, file) => {
     setQuestions(newQuestions);
     setOriginalText(text);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPdfUrl(url);
+      setPdfFile(file);
+    }
   };
 
   const handleReset = () => {
@@ -72,7 +79,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="w-full px-2 sm:px-4 lg:px-8 py-8">
         {!questions ? (
           <div className="text-center">
             {/* Hero Section */}
@@ -112,7 +119,7 @@ export default function Home() {
             </div>
 
             {/* Upload Section */}
-            <FileUpload onQuestionsGenerated={handleQuestionsGenerated} />
+            <FileUpload onQuestionsGenerated={(qs, text, file) => handleQuestionsGenerated(qs, text, file)} />
 
             {/* Instructions */}
             <div className="mt-12 max-w-2xl mx-auto">
@@ -132,11 +139,28 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <QuizSection 
-            questions={questions} 
-            originalText={originalText} 
-            onQuestionsGenerated={handleQuestionsGenerated}
-          />
+          <div className="flex flex-row gap-6 w-full">
+            <div className="flex-1 min-w-0">
+              <QuizSection questions={questions} originalText={originalText} />
+            </div>
+            <div className="flex-[2] min-w-0 flex flex-col gap-4">
+              {pdfUrl && pdfFile && (
+                <div className="bg-white rounded-lg shadow p-2">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-lg font-bold text-blue-700">Xem PDF gốc</h3>
+                    <a href={pdfUrl} download={pdfFile.name || 'file.pdf'} className="text-blue-600 underline text-sm font-medium" target="_blank" rel="noopener noreferrer">Tải file PDF</a>
+                  </div>
+                  <iframe
+                    src={pdfUrl}
+                    width="100%"
+                    height="600px"
+                    style={{ border: 'none', borderRadius: '8px' }}
+                    title="PDF Viewer"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </main>
 

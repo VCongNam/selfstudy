@@ -19,15 +19,21 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     const count = parseInt(req.body.count) || 10;
     const type = req.body.type || 'mixed';
+    const difficulty = req.body.difficulty || 'any';
 
     const pdfData = await pdfParse(req.file.buffer);
     const textContent = pdfData.text;
 
-    // Prompt cho Gemini
+    let difficultyText = '';
+    if (difficulty !== 'any') {
+      difficultyText = `Tất cả câu hỏi phải có độ khó ${difficulty === 'easy' ? 'dễ' : difficulty === 'medium' ? 'trung bình' : 'khó'} (difficulty: ${difficulty}). Không tạo câu hỏi ở độ khó khác.`;
+    }
+
     let prompt;
     if (type === 'multiple_choice') {
       prompt = `
-Dựa trên nội dung sau đây, hãy tạo ra ${count} câu hỏi trắc nghiệm tiếng Anh với độ khó tăng dần từ dễ đến khó.
+Dựa trên nội dung sau đây, hãy tạo ra ${count} câu hỏi trắc nghiệm tiếng Anh${difficulty === 'any' ? ' với độ khó tăng dần từ dễ đến khó' : ''}.
+${difficultyText}
 Mỗi câu hỏi cần có:
 - Câu hỏi chính
 - 4 lựa chọn A, B, C, D
@@ -60,7 +66,8 @@ Chỉ trả về kết quả dưới dạng JSON, không giải thích, không t
 `;
     } else if (type === 'essay') {
       prompt = `
-Dựa trên nội dung sau đây, hãy tạo ra ${count} câu hỏi tự luận tiếng Anh với độ khó tăng dần từ dễ đến khó.
+Dựa trên nội dung sau đây, hãy tạo ra ${count} câu hỏi tự luận tiếng Anh${difficulty === 'any' ? ' với độ khó tăng dần từ dễ đến khó' : ''}.
+${difficultyText}
 Mỗi câu hỏi cần có:
 - Câu hỏi chính yêu cầu học sinh viết câu trả lời chi tiết
 - Đáp án mẫu để tham khảo
@@ -87,9 +94,9 @@ Chỉ trả về kết quả dưới dạng JSON, không giải thích, không t
       // Mixed type
       const multipleChoiceCount = Math.ceil(count / 2);
       const essayCount = count - multipleChoiceCount;
-      
       prompt = `
-Dựa trên nội dung sau đây, hãy tạo ra ${count} câu hỏi tiếng Anh hỗn hợp với độ khó tăng dần từ dễ đến khó.
+Dựa trên nội dung sau đây, hãy tạo ra ${count} câu hỏi tiếng Anh hỗn hợp${difficulty === 'any' ? ' với độ khó tăng dần từ dễ đến khó' : ''}.
+${difficultyText}
 Bao gồm:
 - ${multipleChoiceCount} câu hỏi trắc nghiệm
 - ${essayCount} câu hỏi tự luận
@@ -170,7 +177,7 @@ Chỉ trả về kết quả dưới dạng JSON, không giải thích, không t
 // Endpoint để tạo thêm câu hỏi
 app.post("/generate-questions", async (req, res) => {
   try {
-    const { text, count, type } = req.body;
+    const { text, count, type, difficulty = 'any' } = req.body;
     
     if (!text) {
       return res.status(400).json({ error: "No text provided" });
@@ -179,11 +186,16 @@ app.post("/generate-questions", async (req, res) => {
     const questionCount = parseInt(count) || 5;
     const questionType = type || 'mixed';
 
-    // Prompt cho Gemini
+    let difficultyText = '';
+    if (difficulty !== 'any') {
+      difficultyText = `Tất cả câu hỏi phải có độ khó ${difficulty === 'easy' ? 'dễ' : difficulty === 'medium' ? 'trung bình' : 'khó'} (difficulty: ${difficulty}). Không tạo câu hỏi ở độ khó khác.`;
+    }
+
     let prompt;
     if (questionType === 'multiple_choice') {
       prompt = `
-Dựa trên nội dung sau đây, hãy tạo ra ${questionCount} câu hỏi trắc nghiệm tiếng Anh với độ khó tăng dần từ dễ đến khó.
+Dựa trên nội dung sau đây, hãy tạo ra ${questionCount} câu hỏi trắc nghiệm tiếng Anh${difficulty === 'any' ? ' với độ khó tăng dần từ dễ đến khó' : ''}.
+${difficultyText}
 Mỗi câu hỏi cần có:
 - Câu hỏi chính
 - 4 lựa chọn A, B, C, D
@@ -216,7 +228,8 @@ Chỉ trả về kết quả dưới dạng JSON, không giải thích, không t
 `;
     } else if (questionType === 'essay') {
       prompt = `
-Dựa trên nội dung sau đây, hãy tạo ra ${questionCount} câu hỏi tự luận tiếng Anh với độ khó tăng dần từ dễ đến khó.
+Dựa trên nội dung sau đây, hãy tạo ra ${questionCount} câu hỏi tự luận tiếng Anh${difficulty === 'any' ? ' với độ khó tăng dần từ dễ đến khó' : ''}.
+${difficultyText}
 Mỗi câu hỏi cần có:
 - Câu hỏi chính yêu cầu học sinh viết câu trả lời chi tiết
 - Đáp án mẫu để tham khảo
@@ -245,7 +258,8 @@ Chỉ trả về kết quả dưới dạng JSON, không giải thích, không t
       const essayCount = questionCount - multipleChoiceCount;
       
       prompt = `
-Dựa trên nội dung sau đây, hãy tạo ra thêm ${questionCount} khác với các câu hỏi đã có, câu hỏi tiếng Anh hỗn hợp với độ khó tăng dần từ dễ đến khó.
+Dựa trên nội dung sau đây, hãy tạo ra ${questionCount} câu hỏi tiếng Anh hỗn hợp${difficulty === 'any' ? ' với độ khó tăng dần từ dễ đến khó' : ''}.
+${difficultyText}
 Bao gồm:
 - ${multipleChoiceCount} câu hỏi trắc nghiệm
 - ${essayCount} câu hỏi tự luận

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BookOpen, RefreshCw, BarChart3, Eye } from 'lucide-react';
 import QuestionCard from './QuestionCard';
 import EssayQuestionCard from './EssayQuestionCard';
@@ -13,7 +13,9 @@ export default function QuizSection({ questions, originalText, onQuestionsGenera
   const [showResults, setShowResults] = useState(false);
   const [currentQuestions, setCurrentQuestions] = useState(questions);
   const [allQuestions, setAllQuestions] = useState(questions);
+  const [allGeneratedQuestions, setAllGeneratedQuestions] = useState(questions);
   const [showReview, setShowReview] = useState(false);
+  const [showFullText, setShowFullText] = useState(false);
 
   const currentQuestion = currentQuestions && currentQuestions.length > 0 ? currentQuestions[currentQuestionIndex] : null;
   const totalQuestions = currentQuestions ? currentQuestions.length : 0;
@@ -55,12 +57,19 @@ export default function QuizSection({ questions, originalText, onQuestionsGenera
       .trim();
   }
 
+  // Hàm kiểm tra trùng sâu cả id và nội dung
+  function isDuplicateQuestion(newQ, existingList) {
+    const norm = normalizeQuestionText(newQ.question);
+    return existingList.some(q => q.id === newQ.id || normalizeQuestionText(q.question) === norm);
+  }
+
   const handleQuestionsGenerated = (newQuestions) => {
-    const existingNormalized = allQuestions.map(q => normalizeQuestionText(q.question));
-    const uniqueNewQuestions = newQuestions.filter(q => !existingNormalized.includes(normalizeQuestionText(q.question)));
+    // Lọc trùng sâu cả id và nội dung
+    const uniqueNewQuestions = newQuestions.filter(q => !isDuplicateQuestion(q, allGeneratedQuestions));
     const mergedQuestions = [...allQuestions, ...uniqueNewQuestions];
     setCurrentQuestions(mergedQuestions);
     setAllQuestions(mergedQuestions);
+    setAllGeneratedQuestions([...allGeneratedQuestions, ...uniqueNewQuestions]);
     setCurrentQuestionIndex(0);
     setUserAnswers({});
     setShowResults(false);
@@ -89,6 +98,23 @@ export default function QuizSection({ questions, originalText, onQuestionsGenera
     if (percentage >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
+
+  // Load lịch sử câu hỏi từ localStorage khi khởi tạo
+  useEffect(() => {
+    const saved = localStorage.getItem('allQuestionsHistory');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setAllGeneratedQuestions(parsed);
+        setAllQuestions(parsed);
+      } catch {}
+    }
+  }, []);
+
+  // Lưu vào localStorage mỗi khi allGeneratedQuestions thay đổi
+  useEffect(() => {
+    localStorage.setItem('allQuestionsHistory', JSON.stringify(allGeneratedQuestions));
+  }, [allGeneratedQuestions]);
 
   if (showResults) {
     const score = calculateScore();
@@ -132,7 +158,8 @@ export default function QuizSection({ questions, originalText, onQuestionsGenera
             <GenerateMoreQuestions 
               originalText={originalText}
               onQuestionsGenerated={handleQuestionsGenerated}
-              existingQuestions={allQuestions.map(q => q.question)}
+              existingQuestions={allGeneratedQuestions.map(q => q.question)}
+              existingQuestionsFull={allGeneratedQuestions}
             />
             <button
               onClick={() => setShowReview(true)}
@@ -227,16 +254,12 @@ export default function QuizSection({ questions, originalText, onQuestionsGenera
 
         {/* Original text toggle and Generate More */}
         <div className="mt-4 flex justify-between items-center">
-          <button
-            onClick={() => setShowOriginalText(!showOriginalText)}
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-          >
-            {showOriginalText ? 'Ẩn' : 'Xem'} nội dung gốc
-          </button>
+          
           <GenerateMoreQuestions 
             originalText={originalText}
             onQuestionsGenerated={handleQuestionsGenerated}
-            existingQuestions={allQuestions.map(q => q.question)}
+            existingQuestions={allGeneratedQuestions.map(q => q.question)}
+            existingQuestionsFull={allGeneratedQuestions}
           />
         </div>
         {showOriginalText && (
@@ -245,6 +268,7 @@ export default function QuizSection({ questions, originalText, onQuestionsGenera
           </div>
         )}
       </div>
+
 
       {/* Current Question */}
       {currentQuestion ? (
