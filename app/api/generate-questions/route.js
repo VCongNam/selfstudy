@@ -7,10 +7,22 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function POST(request) {
   try {
-    const formData = await request.formData();
-    const text = formData.get('text');
-    const count = parseInt(formData.get('count')) || 5;
-    const type = formData.get('type') || 'mixed';
+    let text, count, type, existingQuestions = [];
+    if (request.headers.get('content-type')?.includes('application/json')) {
+      const body = await request.json();
+      text = body.text;
+      count = parseInt(body.count) || 5;
+      type = body.type || 'mixed';
+      existingQuestions = Array.isArray(body.existingQuestions) ? body.existingQuestions : [];
+    } else {
+      const formData = await request.formData();
+      text = formData.get('text');
+      count = parseInt(formData.get('count')) || 5;
+      type = formData.get('type') || 'mixed';
+      try {
+        existingQuestions = JSON.parse(formData.get('existingQuestions'));
+      } catch { existingQuestions = []; }
+    }
 
     if (!text) {
       return NextResponse.json({ error: 'Không tìm thấy nội dung văn bản' }, { status: 400 });
@@ -29,7 +41,7 @@ export async function POST(request) {
       - Đáp án đúng
       - Giải thích chi tiết tại sao đáp án đó đúng
       - Gợi ý học tập
-
+      ${existingQuestions.length > 0 ? `\nKhông được lặp lại các câu hỏi sau:\n${existingQuestions.map(q => '- ' + q).join('\n')}` : ''}
       Nội dung: ${text}
 
       Trả về kết quả dưới dạng JSON với cấu trúc:
@@ -61,7 +73,7 @@ export async function POST(request) {
       - Đáp án mẫu để tham khảo
       - Gợi ý học tập
       - Độ khó phù hợp
-
+      ${existingQuestions.length > 0 ? `\nKhông được lặp lại các câu hỏi sau:\n${existingQuestions.map(q => '- ' + q).join('\n')}` : ''}
       Nội dung: ${text}
 
       Trả về kết quả dưới dạng JSON với cấu trúc:
@@ -88,7 +100,7 @@ export async function POST(request) {
       Bao gồm:
       - ${multipleChoiceCount} câu hỏi trắc nghiệm
       - ${essayCount} câu hỏi tự luận
-
+      ${existingQuestions.length > 0 ? `\nKhông được lặp lại các câu hỏi sau:\n${existingQuestions.map(q => '- ' + q).join('\n')}` : ''}
       Nội dung: ${text}
 
       Trả về kết quả dưới dạng JSON với cấu trúc:

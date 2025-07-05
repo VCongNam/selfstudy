@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Plus, Loader2 } from 'lucide-react';
 
-export default function GenerateMoreQuestions({ originalText, onQuestionsGenerated }) {
+export default function GenerateMoreQuestions({ originalText, onQuestionsGenerated, existingQuestions = [] }) {
   const [isLoading, setIsLoading] = useState(false);
   const [questionCount, setQuestionCount] = useState(5);
   const [questionType, setQuestionType] = useState('mixed'); // 'multiple_choice', 'essay', 'mixed'
@@ -24,7 +24,8 @@ export default function GenerateMoreQuestions({ originalText, onQuestionsGenerat
         body: JSON.stringify({
           text: originalText,
           count: questionCount,
-          type: questionType
+          type: questionType,
+          existingQuestions,
         }),
       });
 
