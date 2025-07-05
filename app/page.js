@@ -132,7 +132,11 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <QuizSection questions={questions} originalText={originalText} />
+          <QuizSection 
+            questions={questions} 
+            originalText={originalText} 
+            onQuestionsGenerated={handleQuestionsGenerated}
+          />
         )}
       </main>
 

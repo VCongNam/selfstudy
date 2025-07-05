@@ -3,15 +3,18 @@
 import { useState } from 'react';
 import { BookOpen, RefreshCw, BarChart3 } from 'lucide-react';
 import QuestionCard from './QuestionCard';
+import EssayQuestionCard from './EssayQuestionCard';
+import GenerateMoreQuestions from './GenerateMoreQuestions';
 
-export default function QuizSection({ questions, originalText }) {
+export default function QuizSection({ questions, originalText, onQuestionsGenerated }) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showOriginalText, setShowOriginalText] = useState(false);
   const [userAnswers, setUserAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
+  const [currentQuestions, setCurrentQuestions] = useState(questions);
 
-  const currentQuestion = questions && questions.length > 0 ? questions[currentQuestionIndex] : null;
-  const totalQuestions = questions ? questions.length : 0;
+  const currentQuestion = currentQuestions && currentQuestions.length > 0 ? currentQuestions[currentQuestionIndex] : null;
+  const totalQuestions = currentQuestions ? currentQuestions.length : 0;
   const answeredQuestions = Object.keys(userAnswers).length;
 
   const handleAnswerSelect = (questionId, answer) => {
@@ -41,14 +44,29 @@ export default function QuizSection({ questions, originalText }) {
     setShowResults(false);
   };
 
+  const handleQuestionsGenerated = (newQuestions) => {
+    setCurrentQuestions(newQuestions);
+    setCurrentQuestionIndex(0);
+    setUserAnswers({});
+    setShowResults(false);
+  };
+
   const calculateScore = () => {
     let correct = 0;
-    questions.forEach(question => {
-      if (userAnswers[question.id] === question.correctAnswer) {
+    let totalScored = 0;
+    currentQuestions.forEach(question => {
+      if (question.type === 'multiple_choice') {
+        totalScored++;
+        if (userAnswers[question.id] === question.correctAnswer) {
+          correct++;
+        }
+      } else if (question.type === 'essay' && userAnswers[question.id]) {
+        totalScored++;
+        // Với câu hỏi tự luận, coi như đúng nếu đã trả lời
         correct++;
       }
     });
-    return { correct, total: totalQuestions, percentage: Math.round((correct / totalQuestions) * 100) };
+    return { correct, total: totalScored, percentage: totalScored > 0 ? Math.round((correct / totalScored) * 100) : 0 };
   };
 
   const getScoreColor = (percentage) => {
@@ -88,13 +106,19 @@ export default function QuizSection({ questions, originalText }) {
             </div>
           </div>
 
-          <button
-            onClick={handleRestart}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <RefreshCw className="h-5 w-5" />
-            Làm lại bài tập
-          </button>
+          <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
+            <button
+              onClick={handleRestart}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <RefreshCw className="h-5 w-5" />
+              Làm lại bài tập
+            </button>
+            <GenerateMoreQuestions 
+              originalText={originalText} 
+              onQuestionsGenerated={handleQuestionsGenerated}
+            />
+          </div>
         </div>
       </div>
     );
@@ -130,30 +154,43 @@ export default function QuizSection({ questions, originalText }) {
           ></div>
         </div>
 
-        {/* Original text toggle */}
-        <div className="mt-4">
+        {/* Original text toggle and Generate More */}
+        <div className="mt-4 flex justify-between items-center">
           <button
             onClick={() => setShowOriginalText(!showOriginalText)}
             className="text-sm text-blue-600 hover:text-blue-800 font-medium"
           >
             {showOriginalText ? 'Ẩn' : 'Xem'} nội dung gốc
           </button>
-          {showOriginalText && (
-            <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-700">{originalText}</p>
-            </div>
-          )}
+          <GenerateMoreQuestions 
+            originalText={originalText} 
+            onQuestionsGenerated={handleQuestionsGenerated}
+          />
         </div>
+        {showOriginalText && (
+          <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+            <p className="text-sm text-gray-700">{originalText}</p>
+          </div>
+        )}
       </div>
 
       {/* Current Question */}
       {currentQuestion ? (
-        <QuestionCard 
-          question={currentQuestion} 
-          index={currentQuestionIndex}
-          onAnswerSelect={handleAnswerSelect}
-          userAnswer={userAnswers[currentQuestion?.id]}
-        />
+        currentQuestion.type === 'essay' ? (
+          <EssayQuestionCard 
+            question={currentQuestion} 
+            index={currentQuestionIndex}
+            onAnswerSubmit={handleAnswerSelect}
+            userAnswer={userAnswers[currentQuestion?.id]}
+          />
+        ) : (
+          <QuestionCard 
+            question={currentQuestion} 
+            index={currentQuestionIndex}
+            onAnswerSelect={handleAnswerSelect}
+            userAnswer={userAnswers[currentQuestion?.id]}
+          />
+        )
       ) : (
         <div className="text-red-500 text-center">Không có câu hỏi nào để hiển thị.</div>
       )}

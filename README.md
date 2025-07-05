@@ -6,6 +6,9 @@
 
 - 📄 Upload file PDF chứa nội dung tiếng Anh
 - 🤖 Sử dụng Gemini AI để tạo bài tập thông minh
+- 🎯 **Hỗ trợ cả câu hỏi trắc nghiệm và tự luận**
+- 🔢 **Tùy chọn số lượng câu hỏi (3-20 câu)**
+- ➕ **Tạo thêm câu hỏi trong khi làm bài**
 - 📊 Độ khó tăng dần từ dễ đến khó
 - 💡 Giải thích chi tiết cho từng câu hỏi
 - 💭 Gợi ý học tập cho người học
@@ -42,16 +45,25 @@ npm run dev
 
 1. **Chuẩn bị tài liệu**: Chuẩn bị file PDF chứa nội dung tiếng Anh (sách, bài báo, tài liệu học tập)
 
-2. **Upload file**: Click "Chọn file PDF" và chọn file của bạn
+2. **Upload file**: 
+   - Click "Chọn file PDF" và chọn file của bạn
+   - Chọn số lượng câu hỏi (5-20 câu)
+   - Chọn loại câu hỏi (hỗn hợp/trắc nghiệm/tự luận)
 
 3. **Đợi AI xử lý**: AI sẽ phân tích nội dung và tạo bài tập (có thể mất vài giây)
 
 4. **Làm bài tập**: 
-   - Trả lời từng câu hỏi
+   - **Câu trắc nghiệm**: Chọn đáp án A, B, C, D
+   - **Câu tự luận**: Viết câu trả lời chi tiết
    - Xem gợi ý học tập nếu cần
    - Xem giải thích chi tiết sau khi trả lời
 
-5. **Xem kết quả**: Kiểm tra điểm số và làm lại nếu muốn cải thiện
+5. **Tạo thêm câu hỏi** (tùy chọn):
+   - Trong khi làm bài, sử dụng phần "Tạo thêm câu hỏi"
+   - Chọn số lượng và loại câu hỏi mới
+   - AI sẽ tạo thêm câu hỏi dựa trên nội dung gốc
+
+6. **Xem kết quả**: Kiểm tra điểm số và làm lại nếu muốn cải thiện
 
 ## Cấu trúc dự án
 
@@ -59,11 +71,15 @@ npm run dev
 selfstudy/
 ├── app/
 │   ├── api/
-│   │   └── upload/
-│   │       └── route.js          # API xử lý upload PDF và tạo bài tập
+│   │   ├── upload/
+│   │   │   └── route.js          # API xử lý upload PDF và tạo bài tập
+│   │   └── generate-questions/
+│   │       └── route.js          # API tạo thêm câu hỏi
 │   ├── components/
 │   │   ├── FileUpload.js         # Component upload file
-│   │   ├── QuestionCard.js       # Component hiển thị câu hỏi
+│   │   ├── QuestionCard.js       # Component hiển thị câu hỏi trắc nghiệm
+│   │   ├── EssayQuestionCard.js  # Component hiển thị câu hỏi tự luận
+│   │   ├── GenerateMoreQuestions.js # Component tạo thêm câu hỏi
 │   │   └── QuizSection.js        # Component quản lý bài tập
 │   ├── page.js                   # Trang chính
 │   └── layout.js                 # Layout chung

@@ -1,8 +1,6 @@
 export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import pdf from 'pdf-parse';
-import { Buffer } from 'buffer';
 
 // Khởi tạo Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -10,25 +8,13 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 export async function POST(request) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file');
-    const count = parseInt(formData.get('count')) || 10;
+    const text = formData.get('text');
+    const count = parseInt(formData.get('count')) || 5;
     const type = formData.get('type') || 'mixed';
 
-    if (!file) {
-      return NextResponse.json({ error: 'Không tìm thấy file' }, { status: 400 });
+    if (!text) {
+      return NextResponse.json({ error: 'Không tìm thấy nội dung văn bản' }, { status: 400 });
     }
-
-    // Kiểm tra file type
-    if (file.type !== 'application/pdf') {
-      return NextResponse.json({ error: 'Chỉ chấp nhận file PDF' }, { status: 400 });
-    }
-
-    // Đọc nội dung PDF
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    
-    const pdfData = await pdf(buffer);
-    const textContent = pdfData.text;
 
     // Tạo bài tập với Gemini AI
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
@@ -44,7 +30,7 @@ export async function POST(request) {
       - Giải thích chi tiết tại sao đáp án đó đúng
       - Gợi ý học tập
 
-      Nội dung: ${textContent}
+      Nội dung: ${text}
 
       Trả về kết quả dưới dạng JSON với cấu trúc:
       {
@@ -76,7 +62,7 @@ export async function POST(request) {
       - Gợi ý học tập
       - Độ khó phù hợp
 
-      Nội dung: ${textContent}
+      Nội dung: ${text}
 
       Trả về kết quả dưới dạng JSON với cấu trúc:
       {
@@ -103,7 +89,7 @@ export async function POST(request) {
       - ${multipleChoiceCount} câu hỏi trắc nghiệm
       - ${essayCount} câu hỏi tự luận
 
-      Nội dung: ${textContent}
+      Nội dung: ${text}
 
       Trả về kết quả dưới dạng JSON với cấu trúc:
       {
@@ -138,20 +124,21 @@ export async function POST(request) {
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
+    const responseText = response.text();
 
     // Parse JSON response
     let questions;
     try {
-      questions = JSON.parse(text);
+      questions = JSON.parse(responseText);
     } catch (error) {
-      // Nếu không parse được JSON, tạo cấu trúc mặc định
+      console.error('Error parsing JSON:', error);
+      // Tạo cấu trúc mặc định nếu không parse được
       questions = {
         questions: [
           {
             id: 1,
-            type: "multiple_choice",
-            question: "Không thể tạo câu hỏi từ nội dung này. Vui lòng thử lại với file khác.",
+            type: 'multiple_choice',
+            question: "Không thể tạo câu hỏi từ nội dung này. Vui lòng thử lại.",
             options: {
               A: "Không có đáp án",
               B: "Không có đáp án", 
@@ -159,8 +146,8 @@ export async function POST(request) {
               D: "Không có đáp án"
             },
             correctAnswer: "A",
-            explanation: "Vui lòng upload file PDF có nội dung tiếng Anh rõ ràng hơn.",
-            hint: "File PDF cần có nội dung tiếng Anh để AI có thể tạo bài tập.",
+            explanation: "Vui lòng thử lại với nội dung khác.",
+            hint: "Nội dung cần có thông tin tiếng Anh rõ ràng.",
             difficulty: "easy"
           }
         ]
@@ -169,14 +156,13 @@ export async function POST(request) {
 
     return NextResponse.json({ 
       success: true, 
-      questions: questions.questions,
-      originalText: textContent.substring(0, 500) + "..." // Lưu 500 ký tự đầu để hiển thị
+      questions: questions.questions
     });
 
   } catch (error) {
-    console.error('Error processing PDF:', error);
+    console.error('Error generating questions:', error);
     return NextResponse.json({ 
-      error: 'Có lỗi xảy ra khi xử lý file PDF' 
+      error: 'Có lỗi xảy ra khi tạo câu hỏi' 
     }, { status: 500 });
   }
 } 

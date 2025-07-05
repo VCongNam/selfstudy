@@ -68,7 +68,7 @@ export default function QuestionCard({ question, index, onAnswerSelect, userAnsw
 
       {/* Question */}
       <div className="mb-4">
-        <h3 className="text-lg font-medium text-gray-900 mb-3">
+        <h3 className="text-lg font-bold text-black mb-3">
           {question.question}
         </h3>
       </div>
@@ -80,17 +80,17 @@ export default function QuestionCard({ question, index, onAnswerSelect, userAnsw
             key={key}
             onClick={() => handleAnswerSelect(key)}
             disabled={hasAnswered}
-            className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+            className={`w-full text-left p-3 rounded-lg border-2 transition-all bg-white ${
               selectedAnswer === key
                 ? key === question.correctAnswer
                   ? 'border-green-500 bg-green-50'
                   : 'border-red-500 bg-red-50'
                 : hasAnswered && key === question.correctAnswer
                 ? 'border-green-500 bg-green-50'
-                : 'border-gray-200 hover:border-blue-300'
+                : 'border-gray-300 hover:border-blue-400'
             } ${hasAnswered ? 'cursor-default' : 'cursor-pointer hover:bg-gray-50'}`}
           >
-            <span className="font-medium text-gray-700">{key}.</span> {value}
+            <span className="font-bold text-black text-base">{key}.</span> <span className="font-bold text-black text-base">{value}</span>
           </button>
         ))}
       </div>
@@ -99,7 +99,7 @@ export default function QuestionCard({ question, index, onAnswerSelect, userAnsw
       <div className="mb-4">
         <button
           onClick={() => setShowHint(!showHint)}
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+          className="flex items-center gap-2 text-blue-700 hover:text-blue-900 text-base font-bold"
         >
           <Lightbulb className="h-4 w-4" />
           Gợi ý học tập
@@ -107,7 +107,7 @@ export default function QuestionCard({ question, index, onAnswerSelect, userAnsw
         </button>
         {showHint && (
           <div className="mt-2 p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800">{question.hint}</p>
+            <p className="text-base font-bold text-black">{question.hint}</p>
           </div>
         )}
       </div>
@@ -117,14 +117,14 @@ export default function QuestionCard({ question, index, onAnswerSelect, userAnsw
         <div className="border-t pt-4">
           <button
             onClick={() => setShowExplanation(!showExplanation)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 text-sm font-medium mb-2"
+            className="flex items-center gap-2 text-black hover:text-black text-base font-bold mb-2"
           >
             {showExplanation ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             {showExplanation ? 'Ẩn giải thích' : 'Xem giải thích'}
           </button>
           {showExplanation && (
             <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-700">{question.explanation}</p>
+              <p className="text-base font-bold text-black">{question.explanation}</p>
             </div>
           )}
         </div>
